@@ -8,41 +8,41 @@ SparseSymmetricBlockMatrix() = SparseSymmetricBlockMatrix(Float64)
 
 blocks(m::SparseSymmetricBlockMatrix) = m.blocks
 
-function setindex!{T<:Number}(bm::SparseSymmetricBlockMatrix{T}, v::T, bi, i, j)
+function setindex!(bm::SparseSymmetricBlockMatrix{Float64}, v::Float64, bi, i, j)
     if haskey(blocks(bm), bi)
         blocks(bm)[bi][i, j] = v
     else
-        m = SparseSymmetricMatrix(T)
+        m = SparseSymmetricMatrix(Float64)
         m[i, j] = v
         blocks(bm)[bi] = m
     end
 end
 
-function setindex!{T<:Number}(bm::SparseSymmetricBlockMatrix{T}, m::SparseSymmetricMatrix{T}, bi)
+function setindex!(bm::SparseSymmetricBlockMatrix{Float64}, m::SparseSymmetricMatrix{Float64}, bi)
     blocks(bm)[bi] = m
 end
 
-function getindex{T<:Number}(bm::SparseSymmetricBlockMatrix{T}, bi, i, j)
-    get(blocks(bm), bi, SparseSymmetricMatrix(T))[i, j]
+function getindex(bm::SparseSymmetricBlockMatrix{Float64}, bi, i, j)
+    get(blocks(bm), bi, SparseSymmetricMatrix(Float64))[i, j]
 end
 
-getindex{T}(bm::SparseSymmetricBlockMatrix{T}, bi) = get(blocks(bm), bi, SparseSymmetricMatrix(T))
+getindex(bm::SparseSymmetricBlockMatrix{Float64}, bi) = get(blocks(bm), bi, SparseSymmetricMatrix(Float64))
 
-start(m::SparseSymmetricBlockMatrix) = start(blocks(m))
-next(m::SparseSymmetricBlockMatrix, state) = next(blocks(m), state)
-done(m::SparseSymmetricBlockMatrix, state) = done(blocks(m), state)
+# start(m::SparseSymmetricBlockMatrix) = start(blocks(m))
+# next(m::SparseSymmetricBlockMatrix, state) = next(blocks(m), state)
+# done(m::SparseSymmetricBlockMatrix, state) = done(blocks(m), state)
 
 copy(m::SparseSymmetricBlockMatrix) = SparseSymmetricBlockMatrix(copy(blocks(m)))
 
-function *{T}(x::T, m::SparseSymmetricBlockMatrix{T})
-    p = SparseSymmetricBlockMatrix(T)
+function *(x::Float64, m::SparseSymmetricBlockMatrix{Float64})
+    p = SparseSymmetricBlockMatrix(Float64)
     for k in keys(blocks(m))
         p[k] = x * m[k]
     end
     p
 end
 
-function show{T<:Number}(io::IO, m::SparseSymmetricBlockMatrix{T})
+function show(io::IO, m::SparseSymmetricBlockMatrix{Float64})
     println(io, typeof(m))
     for (blockindex, matrix) in blocks(m)
         for ((i, j), v) in matrix.entries
@@ -54,14 +54,16 @@ end
 ==(A::SparseSymmetricBlockMatrix, B::SparseSymmetricBlockMatrix) = blocks(A) == blocks(B)
 
 function isapprox(A::SparseSymmetricBlockMatrix, B::SparseSymmetricBlockMatrix)
-    for (bi, bm) in A
-        if !isapprox(bm, B[bi])
-            return false
-        end
+    nb_blocks = length(blocks(A))
+    if nb_blocks != length(blocks(B))
+        return false
     end
-    for (bi, bm) in B
-        if !isapprox(bm, A[bi])
-            return false
+
+    for b in 1:nb_blocks
+        for ((i,j),val) in A.blocks[b].entries
+            if !isapprox(val, B.blocks[b].entries[i,j])
+                return false
+            end
         end
     end
     true

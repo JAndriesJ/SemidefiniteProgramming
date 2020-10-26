@@ -26,17 +26,17 @@ normalized(sdp::SparseSDP) = sdp.normalized
 
 copy(sdp::SparseSDP) = SparseSDP(copy(obj(sdp)), copy(cons(sdp)), copy(rhs(sdp)), sdp.maximize)
 
-setobj!{T<:Number}(sdp::SparseSDP{T}, c::SparseSymmetricBlockMatrix{T}) = obj(sdp) = obj
+setobj!(sdp::SparseSDP{Float64}, c::SparseSymmetricBlockMatrix{Float64}) = obj(sdp) = obj
 
-function setobj!{T<:Number}(sdp::SparseSDP{T}, bi, m::SparseSymmetricMatrix{T})
+function setobj!(sdp::SparseSDP{Float64}, bi, m::SparseSymmetricMatrix{Float64})
     obj(sdp)[bi] = m
 end
 
-function setobj!{T<:Number}(sdp::SparseSDP{T}, bi, i, j, v::T)
+function setobj!(sdp::SparseSDP{Float64}, bi, i, j, v::Float64)
     obj(sdp)[bi, i, j] = v
 end
 
-function setobj!{T<:Number}(sdp::SparseSDP{T}, bi, m::Matrix{T})
+function setobj!(sdp::SparseSDP{Float64}, bi, m::Matrix{Float64})
     n = size(m)[1]
     for j = 1:n
         for i = 1:j
@@ -55,52 +55,52 @@ freecons(sdp::SparseSDP) = sdp.freecons
 
 freeobj(sdp::SparseSDP) = sdp.freeobj
 
-function setcon!{T<:Number}(sdp::SparseSDP{T}, ri, bi, i, j, v::T)
+function setcon!(sdp::SparseSDP{Float64}, ri, bi, i, j, v::Float64)
     if !isapprox(v, 0.0)
         if haskey(cons(sdp), ri)
             cons(sdp)[ri][bi, i, j] = v
         else
-            a = SparseSymmetricBlockMatrix(T)
+            a = SparseSymmetricBlockMatrix(Float64)
             a[bi, i, j] = v
             cons(sdp)[ri] = a
         end
     end
 end
 
-function setcon!{T<:Number}(sdp::SparseSDP{T}, ri, bi, m::AbstractMatrix{T})
+function setcon!(sdp::SparseSDP{Float64}, ri, bi, m::AbstractMatrix{Float64})
     for i = 1:size(m, 1)
         for j = 1:size(m, 2)
-            if m[i, j] != zero(T)
+            if m[i, j] != zero(Float64)
                 setcon!(sdp, ri, bi, i, j, m[i, j])
             end
         end
     end
 end
 
-function setfreecon!{T<:Number}(sdp::SparseSDP{T}, ri, ci, v::T)
+function setfreecon!(sdp::SparseSDP{Float64}, ri, ci, v::Float64)
     if !isapprox(v, 0.0)
         if haskey(D(sdp), ri)
-            freecon(sdp)[ri][ci] = T
+            freecon(sdp)[ri][ci] = Float64
         else
-            freecon(sdp)[ri] = Dict{Any,T}(ci => v)
+            freecon(sdp)[ri] = Dict{Any,Float64}(ci => v)
         end
     end
 end
 
-setfreeobj!{T<:Number}(sdp::SparseSDP{T}, ri, v::T) = freeobj(sdp)[ri] = v
+setfreeobj!(sdp::SparseSDP{Float64}, ri, v::Float64) = freeobj(sdp)[ri] = v
 
 cons(sdp::SparseSDP) = sdp.cons
 
 getcon(sdp::SparseSDP, ri) = sdp.cons[ri]
 
-setrhs!{T<:Number}(sdp::SparseSDP{T}, ri, v::T) = sdp.rhs[ri] = v
+setrhs!(sdp::SparseSDP{Float64}, ri, v::Float64) = sdp.rhs[ri] = v
 
 rhs(sdp::SparseSDP) = sdp.rhs
 
 rhs(sdp::SparseSDP, ri) = sdp.rhs[ri]
 
-function rhsdense{T<:Number}(sdp::SparseSDP{T})
-    l = zeros(T, ncons(sdp))
+function rhsdense(sdp::SparseSDP{Float64})
+    l = zeros(Float64, ncons(sdp))
     for (ri, v) in rhs(sdp)
         l[ri] = v
     end

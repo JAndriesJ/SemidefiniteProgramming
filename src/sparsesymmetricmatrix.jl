@@ -3,6 +3,8 @@ mutable struct SparseSymmetricMatrix{T<:Number}
     indices::Set{Any}
 end
 
+
+
 SparseSymmetricMatrix(T::Type) = SparseSymmetricMatrix{T}(Dict{Tuple{Any,Any},T}(), Set())
 
 SparseSymmetricMatrix() = SparseSymmetricMatrix(Float64)
@@ -11,33 +13,35 @@ entries(m::SparseSymmetricMatrix) = m.entries
 
 indices(m::SparseSymmetricMatrix) = m.indices
 
-function setindex!{T<:Number}(m::SparseSymmetricMatrix{T}, v::T, i, j)
+
+function setindex!(m::SparseSymmetricMatrix{Float64}, v::Float64, i, j)
     entries(m)[(i, j)] = v
     push!(indices(m), i)
     push!(indices(m), j)
 end
 
-function getindex{T<:Number}(m::SparseSymmetricMatrix{T}, i, j)
-    get(m.entries, (i, j), zero(T))
+function getindex(m::SparseSymmetricMatrix{Float64}, i, j)
+    get(m.entries, (i, j), zero(Float64))
 end
 
-start(m::SparseSymmetricMatrix) = start(m.entries)
-done(m::SparseSymmetricMatrix, state) = done(m.entries, state)
-next(m::SparseSymmetricMatrix, state) = next(m.entries, state)
+# #  this code is deprecated
+# start(m::SparseSymmetricMatrix) = start(m.entries)
+# done(m::SparseSymmetricMatrix, state) = done(m.entries, state)
+# next(m::SparseSymmetricMatrix, state) = next(m.entries, state)
 
 function size(m::SparseSymmetricMatrix)
     is = Set()
     js = Set()
     for (i, j) in keys(m.entries)
-        add!(is, i)
-        add!(js, j)
+        is = union(is,i)
+        js = union(js,j)
     end
     return max(length(is), length(js))
 end
 
 copy(m::SparseSymmetricMatrix) = SparseSymmetricMatrix(copy(entries(m)), copy(indices(m)))
 
-function *{T<:Number}(x::T, m::SparseSymmetricMatrix{T})
+function *(x::Float64, m::SparseSymmetricMatrix{Float64})
     p = copy(m)
     for k in keys(entries(m))
         entries(p)[k] *= x
@@ -45,7 +49,7 @@ function *{T<:Number}(x::T, m::SparseSymmetricMatrix{T})
     p
 end
 
-function delete!{T<:Number}(m::SparseSymmetricMatrix{T}, i, j)
+function delete!(m::SparseSymmetricMatrix{Float64}, i, j)
     delete!(entries(m), (i, j))
     igone = true
     jgone = true
@@ -70,16 +74,16 @@ function ==(A::SparseSymmetricMatrix, B::SparseSymmetricMatrix)
 end
 
 function isapprox(A::SparseSymmetricMatrix, B::SparseSymmetricMatrix)
-    if indices(A) != indices(B)  
+    if indices(A) != indices(B)
         return false
     end
-    for ((ri, ci), v) in A
-        if !isapprox(v, B[ri, ci]) 
+    for ((ri, ci), v) in A.entries
+        if !isapprox(v, B[ri, ci])
             return false
         end
     end
-    for ((ri, ci), v) in B
-        if !isapprox(v, A[ri, ci]) 
+    for ((ri, ci), v) in B.entries
+        if !isapprox(v, A[ri, ci])
             return false
         end
     end
