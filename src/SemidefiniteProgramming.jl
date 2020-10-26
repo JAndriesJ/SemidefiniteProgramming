@@ -81,16 +81,21 @@ export
     cons,
     getcon,
     setrhs!,
-    rhs, rhsdense,
+    rhs,
+    rhsdense,
     ncons,
     blocksizes
+# normalization.jl
+    sanitycheck
+    # IndexMap,
+    # newindex!
+    # normalize
+
 
 include("sparsesymmetricmatrix.jl")
 include("sparsesymmetricblockmatrix.jl")
 include("sparsesdp.jl")
-
-
-# include("normalization.jl")
+include("normalization.jl")
 # include("sdpasparse.jl")
 # include("solvers.jl")
 # include("sdpsolution.jl")

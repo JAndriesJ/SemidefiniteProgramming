@@ -26,6 +26,8 @@ normalized(sdp::SparseSDP) = sdp.normalized
 
 copy(sdp::SparseSDP) = SparseSDP(copy(obj(sdp)), copy(cons(sdp)), copy(rhs(sdp)), sdp.maximize)
 
+
+# There are (4) ways to set values to the SDP each depending on the input given.
 setobj!(sdp::SparseSDP{Float64}, c::SparseSymmetricBlockMatrix{Float64}) = obj(sdp) = obj
 
 function setobj!(sdp::SparseSDP{Float64}, bi, m::SparseSymmetricMatrix{Float64})
@@ -46,6 +48,7 @@ function setobj!(sdp::SparseSDP{Float64}, bi, m::Matrix{Float64})
         end
     end
 end
+
 
 obj(sdp::SparseSDP) = sdp.obj
 
@@ -124,7 +127,7 @@ end
 
 function blocksizes(sdp::SparseSDP)
     blockdict = Dict{Any,Set}()
-    for (bi, block) in obj(sdp)
+    for (bi, block) in obj(sdp).blocks
         indices = get(blockdict, bi, Set())
         union!(indices, block.indices)
         blockdict[bi] = indices

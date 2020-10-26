@@ -1,6 +1,11 @@
-mutable struct IndexMap
-    m::Dict
-    c::Int
+mutable struct IndexMap{T<:Number}
+    m::Dict{Any,T}
+    c::Int64
+end
+
+function sanitycheck()
+    return "sanity"
+    println("sanity")
 end
 
 IndexMap() = IndexMap(Dict(), 0)
@@ -11,22 +16,22 @@ function newindex!(oldindex, i::IndexMap)
     else
         i.c += 1
         i.m[oldindex] = i.c
-        return i.c        
+        return i.c
     end
 end
 
-function normalize{T}(sdp::SparseSDP{T})
+function normalize(sdp::SparseSDP{Float64})
     newsdp = SparseSDP(T, maximize=ismaximizationproblem(sdp), normalized=true)
-    
+
     cm = IndexMap()
     bm = IndexMap()
     ems = Dict{Any,IndexMap}()
-    
+
     for (ri, value) in rhs(sdp)
         newri = newindex!(ri, cm)
         setrhs!(newsdp, newri, value)
     end
-    
+
     for (bi, matrix) in blocks(obj(sdp))
         newbi = newindex!(bi, bm)
         if !haskey(ems, newbi)
@@ -36,9 +41,9 @@ function normalize{T}(sdp::SparseSDP{T})
             newi = newindex!(i, ems[newbi])
             newj = newindex!(j, ems[newbi])
             setobj!(newsdp, newbi, newi, newj, v)
-        end    
+        end
     end
-       
+
     for (ri, blockmatrix) in cons(sdp)
         newri = newindex!(ri, cm)
         for (bi, matrix) in blocks(blockmatrix)

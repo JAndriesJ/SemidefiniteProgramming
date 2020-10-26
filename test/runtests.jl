@@ -49,27 +49,49 @@ end
     @test isapprox(SSBM_copy, *(0.0000001,SSBM_alt)) == false
 end
 
-# Test functionality of sparsesymmetricblockmatrix.jl
-SSDP = SparseSDP
-ismaximizationproblem(SSDP)
-setmaximizationproblem!(SSDP)
-normalized(SSDP)
-SSDP_copy = copy(SSDP)
-setobj!(SSDP,SSBM)
-obj,
-freeobj,
-setcon!,
-setfreecon!,
-cons,
-getcon,
-setrhs!,
-rhs, rhsdense,
-ncons,
-blocksizes
+@testset "sparsesdp.jl" begin
+    SSDP = SparseSDP(Float64)
+    @test ismaximizationproblem(SSDP)
+    @test setmaximizationproblem!(SSDP, true)
+    @test !normalized(SSDP)
+
+    SSBM = SparseSymmetricBlockMatrix(Float64)
+    for b in 1:2
+        for i in 1:3
+            for j in i:3
+                setindex!(SSBM, rand(1)[1], b,i, j)
+            end
+        end
+    end
+    setobj!(SSDP,SSBM)
+    obj(SSDP)
+    obj(SSDP,1)
+    obj(SSDP,2)
+    freeobj(SSDP)
+    setcon!(SSDP,1, 1, 1, 1, 2.3)
+    cons(SSDP)
+
+    getcon(SSDP,1)
+    setrhs!(SSDP, 1, rand(1)[1])
+    rhs(SSDP,1)
+    rhsdense(SSDP)
+    ncons(SSDP)
+end
+    ## Errors
+    # setfreecon!(SSDP, 1, 1, 1.1)
+    # freecons(SSDP)
+    # blocksizes(SSDP)
+    # SSDP_copy = copy(SSDP)
+
+@testset "normalization.jl" begin
+    sanitycheck()
+    # IndexMap()
+    # newindex!,
+    # normalize
+end
 
 
 
-# SparseSDP(maximize=true)
 
 #
 #
@@ -95,5 +117,4 @@ blocksizes
 #     setcon!(sdp, 2, 3, 2, 2, 6.0)
 #
 #     println(obj(solve(sdp, CSDP())))
-
-end
+# end
